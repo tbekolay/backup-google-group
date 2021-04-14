@@ -23,7 +23,7 @@ confirm() {
 }
 
 if [ ! -d "google-group-crawler" ]; then
-    git clone https://github.com/icy/google-group-crawler.git
+    git clone git@github.com:icy/google-group-crawler.git
     echo ""
 fi
 
@@ -37,18 +37,19 @@ _GROUP=$(get_string "Enter the Google Group name to backup")
 
 cat <<EOF
 
-Private groups require a cookie file to pass authentication.
+Private groups require cookie information to pass authentication. See
+https://github.com/icy/google-group-crawler#private-group-or-group-hosted-by-an-organization
 Leave this blank for public groups.
 
 EOF
-printf 'Cookie file: '
+printf 'curl options file: '
 read -r _COOKIES
 
 cat <<EOF
 
 You have entered the following:
   Google group name: $_GROUP
-  Cookie file: $_COOKIES
+  curl options file: $_COOKIES
 
 EOF
 
@@ -62,13 +63,13 @@ fi
 # --- Run google-group-crawler
 if [ -z "$_COOKIES" ]; then
     _GROUP=$_GROUP \
-          google-group-crawler/crawler.sh -sh > wget.sh
+          google-group-crawler/crawler.sh -sh > curl.sh
 else
     _GROUP=$_GROUP \
-          _WGET_OPTIONS="--load-cookies $_COOKIES --keep-session-cookies" \
-          google-group-crawler/crawler.sh -sh > wget.sh
+          _CURL_OPTIONS="-K $_COOKIES" \
+          google-group-crawler/crawler.sh -sh > curl.sh
 fi
-. wget.sh
+. curl.sh
 
 # --- Do some cleanup on resulting mbox files.
 #     Feel free to add to this block for your specific cleanup.
